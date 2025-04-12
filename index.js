@@ -64,7 +64,7 @@ app.post('/api/return', upload.single('image'), async (req, res) => {
       body: JSON.stringify({
         toPersonEmail: email,
         text: '📸 근처에 불법 주차된 PM이 있습니다. 위치를 조정해주세요!',
-        files: [`https://dc7c-58-230-197-51.ngrok-free.app/uploads/20250409_reAdjustPM.jpg`]
+        files: [`https://98bd-222-107-173-96.ngrok-free.app/uploads/20250409_reAdjustPM.jpg`]
       })
     });
 
@@ -129,6 +129,8 @@ app.post('/webhook', async (req, res) => {
     // 1) 사용자가 "!reward" 명령을 입력한 경우
     if (msgText === '!reward') {
       const rewardInfo = getRewardByUser(senderEmail);
+      // ****현재 이 부분의 경우, webhook을 https://developer.webex.com/docs/api/v1/webhooks/create-a-webhook 에서 임시로 ngrok이 바뀔때마다 url에 맞춰서 생성해 줘야 한다.
+      // cho010105-6xnw.wbx.ai 계정에서 생성해야 함. 그래야 !reward가 정상적으로 일반 사용자에게서 발신됨.
       let replyText = `🎉 ${senderEmail}님의 리워드 현황:\n총 리워드: ${rewardInfo.total} 코인\n`;
       rewardInfo.details.forEach((detail, idx) => {
         replyText += `${idx + 1}. ${detail.date}: ${detail.coins} 코인\n`;
