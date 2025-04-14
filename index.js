@@ -28,7 +28,11 @@ app.use('/uploads', express.static(uploadDir));
 const ADMIN_EMAIL = 'cho010105@gachon.ac.kr';
 const BOT_TOKEN = process.env.WEBEX_BOT_TOKEN;
 
+// pendingRequests: PM 위치 재조정 요청에 대해 관리자가 승인/거부할 때 사용할 임시 저장소
 const pendingRequests = {};
+
+// rewardData: 각 사용자(email)별 리워드 내역을 인메모리로 저장 (실제 운용 시 DB 사용 권장)
+const rewardData = {};
 
 // PM 반납 요청 API
 app.post('/api/return', upload.single('image'), async (req, res) => {
@@ -75,7 +79,7 @@ app.post('/api/return', upload.single('image'), async (req, res) => {
   }
 });
 
-// PM 위치 재조정 시 API
+// PM 위치 재조정 요청 API
 app.post('/api/pm-adjusted', upload.single('image'), async (req, res) => {
   const { email, latitude, longitude, message } = req.body;
   const imagePath = req.file?.path;
@@ -100,6 +104,7 @@ app.post('/api/pm-adjusted', upload.single('image'), async (req, res) => {
       body: form
     });
 
+    // 요청을 pendingRequests에 저장하여 나중에 관리자가 승인/거부할 수 있도록 함.
     pendingRequests[email] = { email, latitude, longitude, requestedAt: new Date() };
 
     res.status(200).json({ message: '조정 요청이 전송되었습니다. 관리자의 승인을 기다리는 중입니다.' });
@@ -109,7 +114,7 @@ app.post('/api/pm-adjusted', upload.single('image'), async (req, res) => {
   }
 });
 
-// 사용자 리워드 승인 요청 관련 API
+// 웹훅 엔드포인트: Webex에서 메시지 이벤트를 수신하여 !reward, 승인/거부 명령 처리
 app.post('/webhook', async (req, res) => {
   try {
     const event = req.body;
@@ -126,14 +131,12 @@ app.post('/webhook', async (req, res) => {
     const msgText = messageData.text ? messageData.text.trim() : '';
     const senderEmail = messageData.personEmail;
 
-    // 1) 사용자가 "!reward" 명령을 입력한 경우
+    // 1) 사용자가 "!reward" 명령을 입력한 경우 : 개인 리워드 내역을 보여줌
     if (msgText === '!reward') {
       const rewardInfo = getRewardByUser(senderEmail);
-      // ****현재 이 부분의 경우, webhook을 https://developer.webex.com/docs/api/v1/webhooks/create-a-webhook 에서 임시로 ngrok이 바뀔때마다 url에 맞춰서 생성해 줘야 한다.
-      // cho010105-6xnw.wbx.ai 계정에서 생성해야 함. 그래야 !reward가 정상적으로 일반 사용자에게서 발신됨.
-      let replyText = `🎉 ${senderEmail}님의 리워드 현황:\n총 리워드: ${rewardInfo.total} 코인\n`;
+      let replyText = `🎉 ${senderEmail}님의 리워드 현황:\n총 리워드: ${rewardInfo.total} cash\n`;
       rewardInfo.details.forEach((detail, idx) => {
-        replyText += `${idx + 1}. ${detail.date}: ${detail.coins} 코인\n`;
+        replyText += `${idx + 1}. ${detail.date}: ${detail.cash} cash\n`;
       });
       await fetch('https://webexapis.com/v1/messages', {
         method: 'POST',
@@ -147,15 +150,13 @@ app.post('/webhook', async (req, res) => {
         })
       });
     }
-    // 2) 관리자가 승인/거부 명령을 입력한 경우
+    // 2) 관리자가 "승인" 또는 "거부" 명령을 입력한 경우 (관리자만)
     else if ((msgText.startsWith('승인') || msgText.startsWith('거부')) && senderEmail === ADMIN_EMAIL) {
       const parts = msgText.split(' ').filter(p => p.trim() !== '');
       let targetEmail = null;
-
       if (parts.length >= 2) {
         targetEmail = parts[1].trim();
-      }
-      else {
+      } else {
         const pendingKeys = Object.keys(pendingRequests);
         if (pendingKeys.length === 1) {
           targetEmail = pendingKeys[0];
@@ -165,7 +166,6 @@ app.post('/webhook', async (req, res) => {
             headers: {
               Authorization: `Bearer ${BOT_TOKEN}`,
               'Content-Type': 'application/json'
-
             },
             body: JSON.stringify({
               toPersonEmail: ADMIN_EMAIL,
@@ -191,6 +191,15 @@ app.post('/webhook', async (req, res) => {
 
       if (targetEmail && pendingRequests[targetEmail]) {
         if (msgText.startsWith('승인')) {
+          // 리워드 업데이트: 사용자의 rewardData에 100 cash를 추가
+          if (!rewardData[targetEmail]) {
+            rewardData[targetEmail] = { total: 0, details: [] };
+          }
+          rewardData[targetEmail].total += 100;
+          rewardData[targetEmail].details.push({
+            date: new Date().toISOString(),
+            cash: 100
+          });
           await fetch('https://webexapis.com/v1/messages', {
             method: 'POST',
             headers: {
@@ -216,7 +225,6 @@ app.post('/webhook', async (req, res) => {
           });
         }
         delete pendingRequests[targetEmail];
-
         await fetch('https://webexapis.com/v1/messages', {
           method: 'POST',
           headers: {
@@ -249,15 +257,9 @@ app.post('/webhook', async (req, res) => {
   }
 });
 
-// 현재는 임시 데이터를 사용함.
+// 사용자 리워드 정보를 반환하는 함수 (인메모리 저장; 실제로는 DB 사용 필요)
 function getRewardByUser(email) {
-  return {
-    total: 10,
-    details: [
-      { date: '2023-09-01', coins: 5 },
-      { date: '2023-10-15', coins: 5 }
-    ]
-  };
+  return rewardData[email] ? rewardData[email] : { total: 0, details: [] };
 }
 
 app.listen(PORT, () => {
