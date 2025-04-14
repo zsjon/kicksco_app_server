@@ -70,7 +70,7 @@ app.post('/api/return', upload.single('image'), async (req, res) => {
       body: JSON.stringify({
         toPersonEmail: email,
         text: '📸 근처에 불법 주차된 PM이 있습니다. 위치를 조정해주세요!',
-        files: [`https://noble-tammara-kicksco-97f46231.koyeb.app/uploads/20250409_reAdjustPM.jpg`]
+        files: [`/uploads/bodo_heatmap3.jpg`]
       })
     });
 
