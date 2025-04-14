@@ -45,7 +45,9 @@ app.post('/api/return', upload.single('image'), async (req, res) => {
 
   try {
     const form = new FormData();
-    const text = `📥 ${email} 님이 PM을 반납했습니다.\n위도: ${latitude}, 경도: ${longitude}`;
+    const formattedLat = parseFloat(latitude).toFixed(5);
+    const formattedLng = parseFloat(longitude).toFixed(5);
+    const text = `📥 ${email} 님이 PM을 반납했습니다.\n위도: ${formattedLat}, 경도: ${formattedLng}`;
     form.append('toPersonEmail', ADMIN_EMAIL);
     form.append('text', text);
     form.append('files', fs.createReadStream(imagePath));
@@ -90,9 +92,11 @@ app.post('/api/pm-adjusted', upload.single('image'), async (req, res) => {
 
   try {
     const form = new FormData();
-    let text = `📤 ${email} 님의 PM 위치 조정 요청\n위도: ${latitude}, 경도: ${longitude}\n요청자: ${email}`;
+    const formattedLat = parseFloat(latitude).toFixed(5);
+    const formattedLng = parseFloat(longitude).toFixed(5);
+    let text = `📤 ${email} 님의 PM 위치 조정 요청\n위도: ${formattedLat}, 경도: ${formattedLng}\n요청자: ${email},\n'승인' 혹은 '거부'를 입력해 주세요.`;
     if (message?.trim()) {
-      text = `📤 ${email} 님의 PM 위치 조정 요청\n메시지: ${message}\n위도: ${latitude.toFixed(5)}, 경도: ${longitude.toFixed(5)}\n요청자: ${email},\n'승인' 혹은 '거부'를 입력해 주세요.`;
+      text = `📤 ${email} 님의 PM 위치 조정 요청\n메시지: ${message}\n위도: ${formattedLat}, 경도: ${formattedLng}\n요청자: ${email},\n'승인' 혹은 '거부'를 입력해 주세요.`;
     }
     form.append('toPersonEmail', ADMIN_EMAIL);
     form.append('text', text);
