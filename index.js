@@ -196,7 +196,8 @@ app.post('/webhook', async (req, res) => {
           rewardData[targetEmail].total += 100;
           // 한국 시간 형식으로 포맷 (YYYY년 MM월 DD일 HH:MM:SS)
           const now = new Date();
-          const formattedDate = `${now.getFullYear()}년 ${("0" + (now.getMonth() + 1)).slice(-2)}월 ${("0" + now.getDate()).slice(-2)}일 ${("0" + now.getHours()).slice(-2)}:${("0" + now.getMinutes()).slice(-2)}:${("0" + now.getSeconds()).slice(-2)}`;
+          const kstNow = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+          const formattedDate = `${kstNow.getFullYear()}년 ${("0" + (kstNow.getMonth() + 1)).slice(-2)}월 ${("0" + kstNow.getDate()).slice(-2)}일 ${("0" + kstNow.getHours()).slice(-2)}:${("0" + kstNow.getMinutes()).slice(-2)}:${("0" + kstNow.getSeconds()).slice(-2)}`;
           rewardData[targetEmail].details.push({
             date: formattedDate,
             cash: 100
