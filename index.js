@@ -45,7 +45,7 @@ app.post('/api/return', upload.single('image'), async (req, res) => {
 
   try {
     const form = new FormData();
-    const text = `📥 ${email} 님이 PM을 반납했습니다.\n위도: ${latitude}, 경도: ${longitude}`;
+    const text = `📥 ${email} 님이 PM을 반납했습니다.\n위도: ${latitude.toFixed(5)}, 경도: ${longitude.toFixed(5)}`;
     form.append('toPersonEmail', ADMIN_EMAIL);
     form.append('text', text);
     form.append('files', fs.createReadStream(imagePath));
@@ -92,7 +92,7 @@ app.post('/api/pm-adjusted', upload.single('image'), async (req, res) => {
     const form = new FormData();
     let text = `📤 ${email} 님의 PM 위치 조정 요청\n위도: ${latitude}, 경도: ${longitude}\n요청자: ${email}`;
     if (message?.trim()) {
-      text = `📤 ${email} 님의 PM 위치 조정 요청\n메시지: ${message}\n위도: ${latitude}, 경도: ${longitude}\n요청자: ${email}`;
+      text = `📤 ${email} 님의 PM 위치 조정 요청\n메시지: ${message}\n위도: ${latitude.toFixed(5)}, 경도: ${longitude.toFixed(5)}\n요청자: ${email},\n'승인' 혹은 '거부'를 입력해 주세요.`;
     }
     form.append('toPersonEmail', ADMIN_EMAIL);
     form.append('text', text);
@@ -205,7 +205,7 @@ app.post('/webhook', async (req, res) => {
             },
             body: JSON.stringify({
               toPersonEmail: targetEmail,
-              text: `🎁 ${targetEmail}님의 PM 위치 재조정 리워드가 지급되었습니다!`
+              text: `🎁 ${targetEmail}님, 100 캐시가 지급되었어요!`
             })
           });
         } else if (msgText.startsWith('거부')) {
