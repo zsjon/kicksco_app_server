@@ -45,7 +45,7 @@ app.post('/api/return', upload.single('image'), async (req, res) => {
 
   try {
     const form = new FormData();
-    const text = `📥 ${email} 님이 PM을 반납했습니다.\n위도: ${latitude.toFixed(5)}, 경도: ${longitude.toFixed(5)}`;
+    const text = `📥 ${email} 님이 PM을 반납했습니다.\n위도: ${latitude}, 경도: ${longitude}`;
     form.append('toPersonEmail', ADMIN_EMAIL);
     form.append('text', text);
     form.append('files', fs.createReadStream(imagePath));
