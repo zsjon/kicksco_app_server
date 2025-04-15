@@ -42,7 +42,7 @@ WEBEX_BOT_TOKEN=your_bot_token_here
 	4.	Webhook URL 등록:
 https://your-koyeb-project.koyeb.app/webhook
 
-## 🛠️ 주요 기능
+## 주요 기능
 
 1. **PM 반납 요청 (`/api/return`)**
    - 사용자가 PM 반납 사진을 첨부하여 요청
@@ -72,7 +72,7 @@ https://your-koyeb-project.koyeb.app/webhook
 
 ---
 
-## 🌐 서버 API 명세
+## 서버 API 명세
 
 | Method | Endpoint            | 설명                                 |
 |--------|---------------------|--------------------------------------|
@@ -82,7 +82,7 @@ https://your-koyeb-project.koyeb.app/webhook
 
 ---
 
-## 🧠 리워드 데이터 구조
+## 리워드 데이터 구조
 
 - 서버 실행 중, 인메모리 객체로 사용자 리워드 내역 관리
 - 실제 운영 시에는 DB로 대체 필요
@@ -99,7 +99,7 @@ https://your-koyeb-project.koyeb.app/webhook
 }
 ```
 
-## 🖼️ Webex 메시지 전송 예시
+## Webex 메시지 전송 예시
 
 관리자에게 전송되는 메시지는 Webex Bot API의 `create-a-message`를 통해 다음과 같이 구성됩니다:
 
@@ -117,7 +117,7 @@ await fetch('https://webexapis.com/v1/messages', {
   })
 });
 ```
-## 🛰️ 서버 실행 방법
+## 서버 실행 방법
 
 ### 1. `.env` 파일 설정
 
