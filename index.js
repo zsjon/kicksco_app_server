@@ -50,7 +50,7 @@ app.post('/api/return', upload.single('image'), async (req, res) => {
     const text = `📥 ${email} 님이 PM을 반납했습니다.\n위도: ${formattedLat}, 경도: ${formattedLng}`;
     form.append('toPersonEmail', ADMIN_EMAIL);
     form.append('text', text);
-    form.append('files', fs.createReadStream(imagePath));
+    // form.append('files', fs.createReadStream(imagePath));
     form.append('timestamp', new Date().toISOString());
     form.append('lat', latitude);
     form.append('lng', longitude);
@@ -61,18 +61,18 @@ app.post('/api/return', upload.single('image'), async (req, res) => {
       body: form
     });
 
-    await fetch('https://webexapis.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${BOT_TOKEN}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        toPersonEmail: email,
-        text: '📸 근처에 불법 주차된 PM이 있습니다. 위치를 조정해주세요!',
-        files: [`https://noble-tammara-kicksco-97f46231.koyeb.app/uploads/bodo_heatmap3.jpg`]
-      })
-    });
+    // await fetch('https://webexapis.com/v1/messages', {
+    //   method: 'POST',
+    //   headers: {
+    //     Authorization: `Bearer ${BOT_TOKEN}`,
+    //     'Content-Type': 'application/json'
+    //   },
+    //   body: JSON.stringify({
+    //     toPersonEmail: email,
+    //     text: '📸 근처에 불법 주차된 PM이 있습니다. 위치를 조정해주세요!',
+    //     files: [`https://noble-tammara-kicksco-97f46231.koyeb.app/uploads/bodo_heatmap3.jpg`]
+    //   })
+    // });
 
     res.status(200).json({ message: '반납 처리 완료' });
   } catch (err) {
@@ -259,10 +259,40 @@ app.post('/webhook', async (req, res) => {
   }
 });
 
+
 // 사용자 리워드 정보를 반환하는 함수 (인메모리 저장; 실제 운용 시 DB 사용 필요)
 function getRewardByUser(email) {
   return rewardData[email] ? rewardData[email] : { total: 0, details: [] };
 }
+
+
+// Meraki Dashboard 접속시 Webex 메시지 전송 API
+app.post('/api/send-image', async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ message: '이메일이 필요합니다.' });
+  }
+
+  try {
+    await fetch('https://webexapis.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${BOT_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        toPersonEmail: email,
+        text: '📸 Meraki Dashboard 접속 알림 및 참고 이미지입니다.',
+        files: [`https://noble-tammara-kicksco-97f46231.koyeb.app/uploads/bodo_heatmap3.jpg`]
+      })
+    });
+
+    res.status(200).json({ message: '메시지가 성공적으로 전송되었습니다.' });
+  } catch (err) {
+    console.error('이미지 전송 실패:', err);
+    res.status(500).json({ message: '메시지 전송 중 오류가 발생했습니다.' });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`✅ 서버 실행 중: http://localhost:${PORT}`);
