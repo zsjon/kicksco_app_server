@@ -276,7 +276,7 @@ app.post('/api/send-image', async (req, res) => {
   try {
     const form = new FormData();
     form.append('toPersonEmail', email);
-    form.append('text', '📸 Meraki Dashboard 접속 알림 및 참고 이미지입니다.');
+    form.append('text', '📸 근처에 불법 주차된 PM이 있습니다. 위치를 조정해주세요!');
     form.append('files', fs.createReadStream('./uploads/bodo_heatmap3.jpg')); // ← 서버 로컬 파일 직접 읽어야 함
 
     await fetch('https://webexapis.com/v1/messages', {
